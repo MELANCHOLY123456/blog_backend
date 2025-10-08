@@ -1,8 +1,13 @@
-const express = require('express');
-const router = express.Router();
-const db = require('../db');
+import express from 'express';
+import db from '../db.js';
 
-// 获取所有类别
+const router = express.Router();
+
+/**
+ * @route   GET /api/categories
+ * @desc    获取所有分类列表
+ * @access  Public
+ */
 router.get('/', async (req, res) => {
     try {
         const queryText = 'SELECT * FROM categories ORDER BY name ASC';
@@ -28,7 +33,11 @@ router.get('/', async (req, res) => {
     }
 });
 
-// 获取带类别的文章
+/**
+ * @route   GET /api/categories/articles-with-categories
+ * @desc    获取文章列表及其分类信息
+ * @access  Public
+ */
 router.get('/articles-with-categories', async (req, res) => {
     try {
         const [articles] = await db.query(`
@@ -75,4 +84,4 @@ router.get('/articles-with-categories', async (req, res) => {
     }
 });
 
-module.exports = router;
+export default router;

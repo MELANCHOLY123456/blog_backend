@@ -1,5 +1,13 @@
-const mysql = require('mysql2');
+import mysql from 'mysql2';
+import dotenv from 'dotenv';
 
+// 加载环境变量配置
+dotenv.config();
+
+/**
+ * 数据库连接池配置
+ * 使用环境变量配置数据库连接参数
+ */
 const pool = mysql.createPool({
     host: process.env.DB_HOST,
     user: process.env.DB_USER,
@@ -11,4 +19,5 @@ const pool = mysql.createPool({
     charset: 'UTF8MB4_GENERAL_CI'
 });
 
-module.exports = pool.promise();
+// 导出 Promise 包装的连接池
+export default pool.promise();

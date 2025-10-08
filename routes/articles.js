@@ -1,8 +1,13 @@
-const express = require('express');
-const router = express.Router();
-const db = require('../db');
+import express from 'express';
+import db from '../db.js';
 
-// 获取所有文章数据
+const router = express.Router();
+
+/**
+ * @route   GET /api/articles
+ * @desc    获取所有文章列表
+ * @access  Public
+ */
 router.get('/', async (req, res) => {
     try {
         const [rows] = await db.query('SELECT * FROM articles');
@@ -21,11 +26,15 @@ router.get('/', async (req, res) => {
     }
 });
 
-// 根据文章 ID 获取文章详情
+/**
+ * @route   GET /api/articles/:id
+ * @desc    根据ID获取文章详情
+ * @access  Public
+ */
 router.get('/:id', async (req, res) => {
     const articleId = req.params.id;
     
-    // 验证参数
+    // 参数验证
     if (!articleId || isNaN(articleId)) {
         return res.status(400).json({
             status: 'error',
@@ -56,4 +65,4 @@ router.get('/:id', async (req, res) => {
     }
 });
 
-module.exports = router;
+export default router;
