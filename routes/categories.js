@@ -10,7 +10,7 @@ const router = express.Router();
  */
 router.get('/', async (req, res) => {
     try {
-        const queryText = 'SELECT * FROM categories ORDER BY name ASC';
+        const queryText = 'SELECT * FROM categories ORDER BY category_id ASC';
         const [rows] = await db.query(queryText);
 
         res.json({
@@ -49,7 +49,7 @@ router.get('/articles-with-categories', async (req, res) => {
             LEFT JOIN categories c ON ac.category_id = c.category_id
             GROUP BY a.article_id
         `);
-        
+
         // 处理categories字段，确保它是一个数组
         const processedArticles = articles.map(article => {
             // 如果categories是字符串形式的JSON数组，需要解析
@@ -60,15 +60,15 @@ router.get('/articles-with-categories', async (req, res) => {
                     article.categories = [];
                 }
             }
-            
+
             // 确保categories是数组
             if (!Array.isArray(article.categories)) {
                 article.categories = [];
             }
-            
+
             return article;
         });
-        
+
         res.json({
             status: 'success',
             data: processedArticles,

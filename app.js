@@ -8,11 +8,11 @@ import categoriesRouter from './routes/categories.js';
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT;
 
 // CORS 配置 - 允许前端跨域访问
 app.use(cors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+    origin: process.env.FRONTEND_URL,
     methods: ['GET', 'POST'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true
@@ -21,23 +21,30 @@ app.use(cors({
 // 解析 JSON 请求体
 app.use(express.json());
 
-// 根路径 - API 概览
+// 根路径 - 服务器信息和API文档概览
 app.get('/', (req, res) => {
     res.json({
-        message: '欢迎使用博客系统 API',
+        message: '博客系统后端服务器正在运行',
         version: '1.0.0',
-        description: '博客系统的后端 API 服务',
-        endpoints: {
-            articles: {
-                list: 'GET /api/articles',
-                detail: 'GET /api/articles/:id'
-            },
-            categories: {
-                list: 'GET /api/categories',
-                articlesWithCategories: 'GET /api/categories/articles-with-categories'
+        description: '这是一个基于Node.js和Express构建的博客系统API服务器',
+        api_documentation: {
+            base_url: '/api',
+            endpoints: {
+                articles: {
+                    list: 'GET /api/articles',
+                    detail: 'GET /api/articles/:id'
+                },
+                categories: {
+                    list: 'GET /api/categories',
+                    articlesWithCategories: 'GET /api/categories/articles-with-categories'
+                }
             }
         },
-        documentation: '详细文档请查看 README.md'
+        server_info: {
+            timestamp: new Date().toISOString(),
+            status: 'online'
+        },
+        documentation: '完整文档请查看项目 README.md 文件'
     });
 });
 
@@ -47,11 +54,17 @@ app.use('/api', (req, res, next) => {
     next();
 });
 
-// API 根路径测试接口
+// API 根路径 - API状态检查和版本信息
 app.get('/api', (req, res) => {
     res.json({
-        message: 'Hello, World!',
-        status: 'success'
+        message: '博客系统API服务',
+        version: '1.0.0',
+        status: 'success',
+        timestamp: new Date().toISOString(),
+        endpoints: {
+            articles: '/api/articles',
+            categories: '/api/categories'
+        }
     });
 });
 
