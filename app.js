@@ -13,13 +13,16 @@ const PORT = process.env.PORT;
 // CORS 配置 - 允许前端跨域访问
 app.use(cors({
     origin: process.env.FRONTEND_URL,
-    methods: ['GET', 'POST'],
+    methods: ['GET', 'POST', 'PUT'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true
 }));
 
 // 解析 JSON 请求体
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
+
+// 解析 URL 编码的请求体
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // 根路径 - 服务器信息和API文档概览
 app.get('/', (req, res) => {
