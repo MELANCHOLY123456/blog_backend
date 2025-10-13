@@ -11,10 +11,26 @@ const router = express.Router();
 router.get('/', async (req, res) => {
     try {
         const [rows] = await db.query('SELECT * FROM articles');
+        // 手动处理时间字段，确保返回正确的时间格式
+        const articlesWithFormattedTime = rows.map(article => {
+            const formattedArticle = { ...article };
+            if (formattedArticle.upload_time) {
+                // 数据库中存储的是北京时间，将其转换为不带时区信息的字符串
+                const uploadTime = new Date(formattedArticle.upload_time);
+                formattedArticle.upload_time = uploadTime.getFullYear() + '-' + 
+                    String(uploadTime.getMonth() + 1).padStart(2, '0') + '-' + 
+                    String(uploadTime.getDate()).padStart(2, '0') + ' ' + 
+                    String(uploadTime.getHours()).padStart(2, '0') + ':' + 
+                    String(uploadTime.getMinutes()).padStart(2, '0') + ':' + 
+                    String(uploadTime.getSeconds()).padStart(2, '0');
+            }
+            return formattedArticle;
+        });
+        
         res.json({
             status: 'success',
-            data: rows,
-            count: rows.length
+            data: articlesWithFormattedTime,
+            count: articlesWithFormattedTime.length
         });
     } catch (error) {
         console.error('Database query error:', error);
@@ -45,9 +61,22 @@ router.get('/:id', async (req, res) => {
     try {
         const [rows] = await db.query('SELECT * FROM articles WHERE article_id = ?', [articleId]);
         if (rows.length > 0) {
+            // 手动处理时间字段，确保返回正确的时间格式
+            const articleData = { ...rows[0] };
+            if (articleData.upload_time) {
+                // 数据库中存储的是北京时间，将其转换为不带时区信息的字符串
+                const uploadTime = new Date(articleData.upload_time);
+                articleData.upload_time = uploadTime.getFullYear() + '-' + 
+                    String(uploadTime.getMonth() + 1).padStart(2, '0') + '-' + 
+                    String(uploadTime.getDate()).padStart(2, '0') + ' ' + 
+                    String(uploadTime.getHours()).padStart(2, '0') + ':' + 
+                    String(uploadTime.getMinutes()).padStart(2, '0') + ':' + 
+                    String(uploadTime.getSeconds()).padStart(2, '0');
+            }
+            
             res.json({
                 status: 'success',
-                data: rows[0]
+                data: articleData
             });
         } else {
             res.status(404).json({
@@ -83,9 +112,14 @@ router.post('/', async (req, res) => {
         }
 
         // 插入文章
+        // 确保使用北京时间存储时间
+        const now = new Date();
+        const beijingTime = new Date(now.getTime() + 8 * 60 * 60 * 1000);
+        const formattedBeijingTime = beijingTime.toISOString().replace('T', ' ').substring(0, 19);
+        
         const [result] = await db.query(
             'INSERT INTO articles (title, content, author, upload_time) VALUES (?, ?, ?, ?)',
-            [title, content, author || null, publish_date || new Date()]
+            [title, content, author || null, publish_date || formattedBeijingTime]
         );
 
         const articleId = result.insertId;
@@ -115,11 +149,24 @@ router.post('/', async (req, res) => {
 
         // 获取创建的文章信息
         const [articleRows] = await db.query('SELECT * FROM articles WHERE article_id = ?', [articleId]);
+        
+        // 手动处理时间字段，确保返回正确的时间格式
+        const articleData = { ...articleRows[0] };
+        if (articleData.upload_time) {
+            // 数据库中存储的是北京时间，将其转换为不带时区信息的字符串
+            const uploadTime = new Date(articleData.upload_time);
+            articleData.upload_time = uploadTime.getFullYear() + '-' + 
+                String(uploadTime.getMonth() + 1).padStart(2, '0') + '-' + 
+                String(uploadTime.getDate()).padStart(2, '0') + ' ' + 
+                String(uploadTime.getHours()).padStart(2, '0') + ':' + 
+                String(uploadTime.getMinutes()).padStart(2, '0') + ':' + 
+                String(uploadTime.getSeconds()).padStart(2, '0');
+        }
 
         res.status(201).json({
             status: 'success',
             message: '文章创建成功',
-            data: articleRows[0]
+            data: articleData
         });
     } catch (error) {
         console.error('Database insert error:', error);
@@ -179,8 +226,15 @@ router.put('/:id', async (req, res) => {
         }
 
         if (publish_date !== undefined) {
+            // 确保使用北京时间存储时间
+            let formattedTime = publish_date;
+            if (!(publish_date instanceof Date)) {
+                const date = new Date(publish_date);
+                const beijingTime = new Date(date.getTime() + 8 * 60 * 60 * 1000);
+                formattedTime = beijingTime.toISOString().replace('T', ' ').substring(0, 19);
+            }
             updateFields.push('upload_time = ?');
-            updateValues.push(publish_date);
+            updateValues.push(formattedTime);
         }
 
         // 如果没有提供任何要更新的字段

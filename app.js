@@ -12,7 +12,26 @@ const PORT = process.env.PORT;
 
 // CORS 配置 - 允许前端跨域访问
 app.use(cors({
-    origin: process.env.FRONTEND_URL,
+    origin: function (origin, callback) {
+        // 允许的来源列表
+        const allowedOrigins = [
+            process.env.FRONTEND_URL, 
+            process.env.FRONTEND_URL_HTTPS,
+            'http://localhost:5173',
+            'http://supercuriously-challengeable-teresia.ngrok-free.dev',
+            'https://supercuriously-challengeable-teresia.ngrok-free.dev'
+        ];
+        
+        // 如果没有提供origin（如移动端应用），允许请求
+        if (!origin) return callback(null, true);
+        
+        // 检查origin是否在允许列表中
+        if (allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
     methods: ['GET', 'POST', 'PUT'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true

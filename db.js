@@ -16,7 +16,8 @@ const pool = mysql.createPool({
     port: process.env.DB_PORT,
     connectionLimit: process.env.DB_CONNECTION_LIMIT,
     queueLimit: 0,
-    charset: 'UTF8MB4_GENERAL_CI'
+    charset: 'UTF8MB4_GENERAL_CI',
+    timezone: '+08:00' // 设置时区为北京时间
 });
 
 // 导出 Promise 包装的连接池
